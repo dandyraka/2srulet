@@ -82,6 +82,16 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.6; }
     }
+    #loadingGif {
+        display: block;
+        margin: 0 auto;
+    }
+    .bg-gif {
+        background-image: url('./akmal.gif');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
   </style>
 </head>
 <body>
@@ -98,6 +108,7 @@
     </div>
     <div class="text-center">
       <div class="result" id="randomNumber">HASIL UNDIAN</div>
+      <!-- <img id="loadingGif" src="./akmal.gif" alt="Loading..." style="display: none; max-width: 100%; height: auto;"> -->
       <button class="btn me-2" onclick="drawNumber()" id="drawButton"><i class="fa-solid fa-shuffle"></i> Undi</button>
       <button class="btn" onclick="undoNumber()" id="undoButton" disabled><i class="fa-solid fa-arrow-rotate-left"></i> Undo</button>
     </div>
@@ -138,7 +149,12 @@
       }
 
       const resultElement = $("#randomNumber");
-      resultElement.text('Mengundi...').addClass('shuffling');
+      const loadingGif = $("#loadingGif");
+      const numberText = $("#numberText");
+      resultElement.text('Mengundi...').addClass('shuffling bg-gif');
+
+      loadingGif.show();
+      numberText.hide();
 
       shuffleInterval = setInterval(() => {
         let randomNum;
@@ -158,7 +174,9 @@
         selectedNumbers.push(randomNum);
         lastDrawnNumber = randomNum;
 
-        resultElement.text(randomNum).removeClass('shuffling');
+        loadingGif.hide();
+        numberText.text(randomNum).show();
+        resultElement.text(randomNum).removeClass('shuffling bg-gif');
         $("#selectedList").html(selectedNumbers.join(', '));
         $("#undoButton").prop('disabled', false);
         updateInfo();
