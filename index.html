@@ -109,6 +109,7 @@
     <div class="text-center">
       <div class="result" id="randomNumber">HASIL UNDIAN</div>
       <!-- <img id="loadingGif" src="./akmal.gif" alt="Loading..." style="display: none; max-width: 100%; height: auto;"> -->
+      <audio id="shuffleAudio" src="https://www.myinstants.com/media/sounds/oiia-short.mp3"></audio>
       <button class="btn me-2" onclick="drawNumber()" id="drawButton"><i class="fa-solid fa-shuffle"></i> Undi</button>
       <button class="btn" onclick="undoNumber()" id="undoButton" disabled><i class="fa-solid fa-arrow-rotate-left"></i> Undo</button>
     </div>
@@ -151,6 +152,9 @@
       const resultElement = $("#randomNumber");
       const loadingGif = $("#loadingGif");
       const numberText = $("#numberText");
+      const shuffleAudio = document.getElementById("shuffleAudio"); // Ambil elemen audio
+      shuffleAudio.currentTime = 0;
+      shuffleAudio.play();
       resultElement.text('Mengundi...').addClass('shuffling bg-gif');
 
       loadingGif.show();
@@ -166,6 +170,7 @@
 
       setTimeout(() => {
         clearInterval(shuffleInterval);
+        shuffleAudio.pause();
         let randomNum;
         do {
           randomNum = Math.floor(Math.random() * totalNumbers) + 1;
