@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JKT48 Theater 2-Shot Roulette</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      background-color: #1E1E2F;
+      color: #E0E0E0;
+      font-family: 'Arial', sans-serif;
+      padding-bottom: 50px;
+    }
+
+    h1 {
+      font-weight: bold;
+      color: #FFD700;
+    }
+
+    .result {
+      font-size: 5rem;
+      font-weight: bold;
+      color: #FFD700;
+      border: 2px dashed #FFD700;
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .badge {
+      font-size: 1rem;
+    }
+
+    .btn {
+      font-size: 1rem;
+      border-radius: 20px;
+    }
+
+    #drawButton {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+    }
+
+    #undoButton {
+      background-color: #F44336;
+      border: none;
+      color: white;
+    }
+
+    #undoButton:disabled {
+      background-color: #444;
+    }
+
+    .selected-numbers {
+      font-size: 2rem;
+      color: #FFC107;
+      font-weight: bold;
+    }
+
+    input:focus {
+      border-color: #FFD700;
+      box-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .shuffling {
+      animation: flicker 0.1s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">JKT48 Theater 2-Shot Roulette</h1>
+    <div class="mb-3 text-center">
+      <label for="totalNumbers" class="form-label"><i class="fa-solid fa-users"></i></label>
+      <input type="number" id="totalNumbers" class="form-control d-inline-block w-auto" placeholder="Jumlah penonton" min="1">
+      <button class="btn btn-outline-warning ms-2" onclick="resetRoulette()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+    </div>
+    <div class="text-center mb-3">
+      <span id="drawInfo" class="badge bg-primary">Diundi dari: 0</span>
+      <span id="terundiInfo" class="badge bg-secondary">Jumlah terundi: 0/48</span>
+    </div>
+    <div class="text-center">
+      <div class="result" id="randomNumber">HASIL UNDIAN</div>
+      <button class="btn me-2" onclick="drawNumber()" id="drawButton"><i class="fa-solid fa-shuffle"></i> Undi</button>
+      <button class="btn" onclick="undoNumber()" id="undoButton" disabled><i class="fa-solid fa-arrow-rotate-left"></i> Undo</button>
+    </div>
+    <div class="text-center mt-4">
+      <div class="selected-numbers">
+        <p>Nomor terpilih:</p>
+        <div id="selectedList">-</div>
+      </div>
+    </div>
+    <hr>
+  </div>
+
+  <script>
+    let totalNumbers = 0;
+    let selectedNumbers = [];
+    let lastDrawnNumber = null;
+    let shuffleInterval = null;
+
+    function updateInfo() {
+      const remainingNumbers = totalNumbers - selectedNumbers.length;
+      $("#drawInfo").text(`Diundi dari: ${remainingNumbers > 0 ? remainingNumbers : 0} nomor`);
+      $("#terundiInfo").text(`Jumlah terundi: ${selectedNumbers.length}/48`);
+    }
+
+    function drawNumber() {
+      if (totalNumbers === 0) {
+        totalNumbers = parseInt($("#totalNumbers").val());
+        if (isNaN(totalNumbers) || totalNumbers <= 0) {
+          alert('Masukkan jumlah penonton!');
+          totalNumbers = 0;
+          return;
+        }
+      }
+
+      if (selectedNumbers.length >= Math.min(48, totalNumbers)) {
+        alert('Semua nomor sudah terpilih!');
+        return;
+      }
+
+      const resultElement = $("#randomNumber");
+      resultElement.text('Mengundi...').addClass('shuffling');
+
+      shuffleInterval = setInterval(() => {
+        let randomNum;
+        do {
+          randomNum = Math.floor(Math.random() * totalNumbers) + 1;
+        } while (selectedNumbers.includes(randomNum));
+        resultElement.text(randomNum);
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(shuffleInterval);
+        let randomNum;
+        do {
+          randomNum = Math.floor(Math.random() * totalNumbers) + 1;
+        } while (selectedNumbers.includes(randomNum));
+
+        selectedNumbers.push(randomNum);
+        lastDrawnNumber = randomNum;
+
+        resultElement.text(randomNum).removeClass('shuffling');
+        $("#selectedList").html(selectedNumbers.join(', '));
+        $("#undoButton").prop('disabled', false);
+        updateInfo();
+      }, 2000);
+    }
+
+    function undoNumber() {
+      if (lastDrawnNumber !== null) {
+        selectedNumbers.pop();
+        $("#randomNumber").text('HASIL UNDIAN');
+        $("#selectedList").html(selectedNumbers.join(', '));
+        lastDrawnNumber = null;
+        if (selectedNumbers.length === 0) {
+          $("#undoButton").prop('disabled', true);
+        }
+        updateInfo();
+      }
+    }
+
+    function resetRoulette() {
+      totalNumbers = 0;
+      selectedNumbers = [];
+      lastDrawnNumber = null;
+      $("#randomNumber").text('HASIL UNDIAN');
+      $("#selectedList").html('-');
+      $("#totalNumbers").val('');
+      $("#undoButton").prop('disabled', true);
+      updateInfo();
+    }
+  </script>
+</body>
+</html>
